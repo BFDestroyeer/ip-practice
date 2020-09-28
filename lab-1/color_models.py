@@ -13,9 +13,19 @@ def rgb_to_yuv(image):
     result_image = numpy.zeros((image.shape[0], image.shape[1], 3), numpy.ubyte)
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
-            result_image[y, x, 0] = 0.299 * image[y, x, 0] + 0.587 * image[y, x, 1] + 0.114 * image[y, x, 2]
-            result_image[y, x, 1] = - 0.147 * image[y, x, 0] - 0.289 * image[y, x, 1] + 0.436 * image[y, x, 2] + 128
-            result_image[y, x, 2] = 0.615 * image[y, x, 0] - 0.515 * image[y, x, 1] - 0.100 * image[y, x, 2] + 128
+            result_image[y, x, 0] = 0.299 * image[y, x, 2] + 0.587 * image[y, x, 1] + 0.114 * image[y, x, 0]
+            result_image[y, x, 1] = - 0.147 * image[y, x, 2] - 0.289 * image[y, x, 1] + 0.436 * image[y, x, 0] + 128
+            result_image[y, x, 2] = 0.615 * image[y, x, 2] - 0.515 * image[y, x, 1] - 0.100 * image[y, x, 0] + 128
+    return result_image
+
+
+def yuv_to_rgb(image):
+    result_image = numpy.zeros((image.shape[0], image.shape[1], 3), numpy.ubyte)
+    for y in range(image.shape[0]):
+        for x in range(image.shape[1]):
+            result_image[y, x, 0] = image[y, x, 0] + 2.032 * (image[y, x, 1] - 128)
+            result_image[y, x, 1] = image[y, x, 0] - 0.395 * (image[y, x, 1] - 128) - 0.581 * (image[y, x, 2] - 128)
+            result_image[y, x, 2] = image[y, x, 0] + 1.140 * (image[y, x, 2] - 128)
     return result_image
 
 
