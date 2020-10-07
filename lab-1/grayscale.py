@@ -1,7 +1,8 @@
 import argparse
 import cv2
 import numpy
-import os
+
+import comparison
 
 
 def init_arg_parser():
@@ -39,10 +40,7 @@ def main(args):
         manual_image = manual_conversion(image)
     cv2.imwrite('output/grayscale_manual.png', manual_image)
 
-    # Вывод метрики сравнения
-    os.system('python comparison.py '
-              '-first_image_path "output/grayscale_cv2.png" '
-              '-second_image_path "output/grayscale_manual.png"')
+    comparison.compare(manual_image, cv2_image)
 
 
 arg_parser = init_arg_parser()
