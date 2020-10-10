@@ -36,8 +36,8 @@ def increase_brightness_bgr(image, coefficient):
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
             result_image[y, x, 0] = min(image[y, x, 0] * coefficient, 255)
-            result_image[y, x, 1] = min(image[y, x, 0] * coefficient, 255)
-            result_image[y, x, 2] = min(image[y, x, 0] * coefficient, 255)
+            result_image[y, x, 1] = min(image[y, x, 1] * coefficient, 255)
+            result_image[y, x, 2] = min(image[y, x, 2] * coefficient, 255)
     return result_image
 
 
@@ -56,17 +56,22 @@ def main(args):
     cv2_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
     cv2.imwrite("output/yuv_cv2.png", cv2_image)
 
-    # Конвертация в YUV
+    # Конвертация в YUV в форме YCbCr
     manual_image = bgr_to_yuv(image)
     cv2.imwrite("output/yuv_manual.png", manual_image, )
 
     # Сравнение результатов конвертации
-    mse = comparison.compare_color(cv2_image, manual_image)
-    print('MSE =', mse)
+    #mse = comparison.compare_color(cv2_image, manual_image)
+    #print('YUV conversion MSE =', mse)
 
     # Повышение яроксти
     brighter_image_bgr = increase_brightness_bgr(image, 1.2)
-    brighter_image_yuv = increase_brightness_yuv(image, 1.2)
+
+    brighter_image_yuv = increase_brightness_yuv(manual_image, 1.2)
+    brighter_image_yuv = yuv_to_bgr(brighter_image_yuv)
+
+    cv2.imwrite("output/brighter_bgr.png", brighter_image_bgr)
+    cv2.imwrite("output/brighter_yuv.png", brighter_image_yuv)
 
 
 arg_parser = init_arg_parser()
