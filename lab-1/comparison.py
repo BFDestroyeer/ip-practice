@@ -37,6 +37,12 @@ def compare_fast(first_image, second_image):
     return result
 
 
+def compare_color_fast(first_image, second_image):
+    result = numpy.sum((first_image.astype(float) - second_image.astype(float)) ** 2)
+    result = result / (first_image.shape[0] * first_image.shape[1] * first_image.shape[2])
+    return result
+
+
 def main(args):
     # Открытие изображений
     first_image = cv2.imread(args.first_image_path, cv2.IMREAD_GRAYSCALE)
@@ -44,7 +50,10 @@ def main(args):
 
     # Вычисление метрики сходства методом MSE
     if args.fast:
-        mse = compare_fast(first_image, second_image)
+        if args.color:
+            mse = compare_color_fast(first_image, second_image)
+        else:
+            mse = compare_fast(first_image, second_image)
     else:
         if args.color:
             mse = compare_color(first_image, second_image)

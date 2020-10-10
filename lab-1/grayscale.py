@@ -12,7 +12,7 @@ def init_arg_parser():
     return parser
 
 
-def manual_conversion(image):
+def grayscale_conversion(image):
     result_image = numpy.zeros((image.shape[0], image.shape[1]), numpy.ubyte)
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
@@ -20,7 +20,7 @@ def manual_conversion(image):
     return result_image
 
 
-def manual_conversion_fast(image):
+def grayscale_conversion_fast(image):
     result_image = numpy.dot(image, [0.3, 0.59, 0.11])
     result_image = result_image.astype(numpy.ubyte)
     return result_image
@@ -35,13 +35,14 @@ def main(args):
 
     # Ручная конвертация методом 4 (Photoshop, GIMP)
     if args.fast:
-        manual_image = manual_conversion_fast(image)
+        manual_image = grayscale_conversion_fast(image)
     else:
-        manual_image = manual_conversion(image)
+        manual_image = grayscale_conversion(image)
     cv2.imwrite('output/grayscale_manual.png', manual_image)
 
-    comparison.compare(manual_image, cv2_image)
+    print("Grayscale conversion MSE = ", comparison.compare_fast(manual_image, cv2_image))
 
 
-arg_parser = init_arg_parser()
-main(arg_parser.parse_args())
+if __name__ == '__main__':
+    arg_parser = init_arg_parser()
+    main(arg_parser.parse_args())
