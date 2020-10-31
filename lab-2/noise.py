@@ -3,6 +3,8 @@ import cv2
 import numpy
 import time
 
+import comparison
+
 
 def init_arg_parser():
     parser = argparse.ArgumentParser()
@@ -51,19 +53,27 @@ def main(args):
     image = cv2.imread(args.path)
 
     begin_median = time.time()
-    manual_image = median_filter(image)
-    cv2.imwrite('output/manual_median.png', manual_image)
+    manual_median = median_filter(image)
+    cv2.imwrite('output/manual_median.png', manual_median)
     end_median = time.time()
 
     begin_averaging = time.time()
-    manual_image = averaging_filter(image)
-    cv2.imwrite('output/manual_averaging.png')
+    manual_averaging = averaging_filter(image)
+    cv2.imwrite('output/manual_averaging.png', manual_averaging)
     end_averaging = time.time()
 
     begin_cv2 = time.time()
     cv2_image = cv2.medianBlur(image, 3)
     cv2.imwrite('output/cv2_median.png', cv2_image)
     end_cv2 = time.time()
+
+    print('Median filter time: ', end_median - begin_median)
+    print('Averaging filter time: ', end_averaging - begin_averaging)
+    print('OpenCV Median filter time', end_cv2 - begin_cv2)
+
+    print('Median filter MSE: ', comparison.compare_color_fast(image, manual_median))
+    print('Averaging filter MSE: ', comparison.compare_color_fast(image, manual_averaging))
+    print('OpenCV Median filter MSE: ', comparison.compare_color_fast(image, cv2_image))
 
 
 if __name__ == '__main__':
