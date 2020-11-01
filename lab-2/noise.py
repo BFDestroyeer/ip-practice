@@ -1,6 +1,7 @@
 import argparse
 import cv2
 import numpy
+import random
 import time
 
 import comparison
@@ -10,6 +11,18 @@ def init_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-path', default='input/cat.png', type=str)
     return parser
+
+
+def salt_and_pepper_noise(image):
+    result_image = image.copy()
+    for y in range(image.shape[0]):
+        for x in range(image.shape[1]):
+            state = random.randint(0, 99)
+            if state < 1:
+                result_image[y, x] = (0, 0, 0)
+            elif state > 98:
+                result_image[y, x] = (255, 255, 255)
+    return result_image
 
 
 def averaging_filter(image):
@@ -52,18 +65,21 @@ def median_filter(image):
 def main(args):
     image = cv2.imread(args.path)
 
+    noised_image = salt_and_pepper_noise(image)
+    cv2.imwrite('output/noised.png', noised_image)
+
     begin_median = time.time()
-    manual_median = median_filter(image)
+    manual_median = median_filter(noised_image)
     cv2.imwrite('output/manual_median.png', manual_median)
     end_median = time.time()
 
     begin_averaging = time.time()
-    manual_averaging = averaging_filter(image)
+    manual_averaging = averaging_filter(noised_image)
     cv2.imwrite('output/manual_averaging.png', manual_averaging)
     end_averaging = time.time()
 
     begin_cv2 = time.time()
-    cv2_image = cv2.medianBlur(image, 3)
+    cv2_image = cv2.medianBlur(noised_image, 3)
     cv2.imwrite('output/cv2_median.png', cv2_image)
     end_cv2 = time.time()
 
