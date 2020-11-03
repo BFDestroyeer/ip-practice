@@ -10,17 +10,18 @@ import comparison
 def init_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-path', default='input/cat.png', type=str)
+    parser.add_argument('-intensity', default=1.0, type=float)
     return parser
 
 
-def salt_and_pepper_noise(image):
+def salt_and_pepper_noise(image, intensity):
     result_image = image.copy()
+    noise_map = numpy.random.uniform(0, 100, (image.shape[0], image.shape[1]))
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
-            state = random.randint(0, 99)
-            if state < 1:
+            if noise_map[y, x] < intensity:
                 result_image[y, x] = (0, 0, 0)
-            elif state > 98:
+            elif noise_map[y, x] > (99 - intensity):
                 result_image[y, x] = (255, 255, 255)
     return result_image
 
@@ -65,7 +66,7 @@ def median_filter(image):
 def main(args):
     image = cv2.imread(args.path)
 
-    noised_image = salt_and_pepper_noise(image)
+    noised_image = salt_and_pepper_noise(image, args.intensity)
     cv2.imwrite('output/noised.png', noised_image)
 
     begin_median = time.time()
