@@ -32,11 +32,13 @@ def uniform(image, segment):
 
 
 def split(image):
-    stack = [[0, 0, image.shape[0], image.shape[1]]]
+    stack = [[0, 0, image.shape[0] , image.shape[1]]]
     result = []
     while True:
         can_exit = True
         for segment in stack:
+            if segment == [24, 10, 25, 11]:
+                print('Alarm!')
             if not uniform(image, segment):
                 y_b = segment[0]
                 y_m = (segment[0] + segment[2]) // 2
@@ -46,14 +48,20 @@ def split(image):
                 x_t = segment[3]
 
                 stack.remove(segment)
+
                 stack.append([y_b, x_b, y_m, x_m])
-                stack.append([y_m, x_b, y_t, x_m])
-                stack.append([y_b, x_m, y_m, x_t])
-                stack.append([y_m, x_m, y_t, x_t])
+                if y_b != y_t:
+                    stack.append([y_m, x_b, y_t, x_m])
+                if x_b != x_t:
+                    stack.append([y_b, x_m, y_m, x_t])
+                if y_b != y_t and x_b != x_t:
+                    stack.append([y_m, x_m, y_t, x_t])
                 can_exit = False
             else:
                 result.append(segment)
                 stack.remove(segment)
+                can_exit = False
+                break
         if can_exit:
             break
     return result
@@ -71,15 +79,28 @@ def p_uniform(image, pixels):
     return True
 
 
-def merge(image):
+def merge(image, in_segments=None):
     mask = numpy.zeros((image.shape[0], image.shape[1]), numpy.ulonglong)
     segments = {}
     borders = {}
-    for y in range(mask.shape[0]):
-        for x in range(mask.shape[1]):
-            mask[y, x] = y * mask.shape[1] + x
-            segments[mask[y, x]] = [[y, x]]
-            borders[mask[y, x]] = [[y, x]]
+    if in_segments is None:
+        for y in range(mask.shape[0]):
+            for x in range(mask.shape[1]):
+                mask[y, x] = y * mask.shape[1] + x
+                segments[mask[y, x]] = [[y, x]]
+                borders[mask[y, x]] = [[y, x]]
+    else:
+        segment_id = 0
+        for segment in in_segments:
+            segments[segment_id] = []
+            borders[segment_id] = []
+            for y in range(segment[0], segment[2]):
+                for x in range(segment[1], segment[3]):
+                    mask[y, x] = segment_id
+                    segments[segment_id].append([y, x])
+                    borders[segment_id].append([y, x])
+            segment_id += 1
+
     while True:
         can_exit = True
         for segment in segments.items():
@@ -120,7 +141,7 @@ def merge(image):
 def paint_segment(segments, shape):
     result_image = numpy.zeros((shape[0], shape[1], 3), numpy.ubyte)
     for segment in segments:
-        color = [random.randint(0, 256), random.randint(0, 256), random.randint(0, 256)]
+        color = [random.randint(64, 256), random.randint(64, 256), random.randint(64, 256)]
         for y in range(segment[0], segment[2]):
             for x in range(segment[1], segment[3]):
                 result_image[y, x] = color
@@ -173,6 +194,12 @@ def main(args):
         segmented_image = p_paint_segment(segments, image.shape)
         moments = p_moment(segments, image, (args.i, args.j))
         cv2.imwrite('./output/merge.png', segmented_image)
+    elif args.method == 'combined':
+        segments = split(image)
+        segments = merge(image, segments)
+        segmented_image = p_paint_segment(segments, image.shape)
+        moments = p_moment(segments, image, (args.i, args.j))
+        cv2.imwrite('./output/combined.png', segmented_image)
 
     for i in range(len(moments)):
         file.write('Moment of segment ' + str(i) + ' = ' + str(moments[i]) + '\n')
