@@ -1,6 +1,16 @@
+import argparse
 import cv2
 import numpy
 import random
+
+
+def init_arg_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-path', default='input/image_small.png', type=str)
+    parser.add_argument('-method', default='split', type=str)
+    parser.add_argument('-i', default=0, type=int)
+    parser.add_argument('-j', default=0, type=int)
+    return parser
 
 
 def filter_threshold(image):
@@ -143,20 +153,31 @@ def p_moment(segments, image, coefs):
         seg_res = 0
         for pixel in segment[1]:
             seg_res += image[pixel[0], pixel[1]] * (pixel[0] ** coefs[0]) * (pixel[1] ** coefs[1])
-        result.append((segment[0], seg_res))
+        result.append(seg_res)
     return result
 
 
-def main():
-    origin_image = cv2.imread('./input/image_small.png', cv2.IMREAD_GRAYSCALE)
+def main(args):
+    origin_image = cv2.imread(args.path, cv2.IMREAD_GRAYSCALE)
     image = filter_threshold(origin_image)
-    segments = split(image)
-    segmented_image = paint_segment(segments, image.shape)
-    segmented_image = cv2.resize(segmented_image, (800, 600), interpolation=cv2.INTER_NEAREST)
-    moment(segments, image, (0, 0))
-    cv2.imshow('test', segmented_image)
-    cv2.waitKey()
+    file = open('./output/moments.txt', 'w')
+    moments = []
+
+    if args.method == 'split':
+        segments = split(image)
+        segmented_image = paint_segment(segments, image.shape)
+        moments = moment(segments, image, (args.i, args.j))
+        cv2.imwrite('./output/split.png', segmented_image)
+    elif args.method == 'merge':
+        segments = merge(image)
+        segmented_image = p_paint_segment(segments, image.shape)
+        moments = p_moment(segments, image, (args.i, args.j))
+        cv2.imwrite('./output/merge.png', segmented_image)
+
+    for i in range(len(moments)):
+        file.write('Moment of segment ' + str(i) + ' = ' + str(moments[i]) + '\n')
 
 
 if __name__ == '__main__':
-    main()
+    arg_parser = init_arg_parser()
+    main(arg_parser.parse_args())
