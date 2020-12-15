@@ -126,6 +126,17 @@ def p_paint_segment(segments, shape):
     return result_image
 
 
+def moment(segments, image, coefs):
+    result = []
+    for segment in segments:
+        seg_res = 0
+        for y in range(segment[0], segment[2]):
+            for x in range(segment[1], segment[3]):
+                seg_res += image[y, x] * (y ** coefs[0]) * (x ** coefs[1])
+        result.append(seg_res)
+    return result
+
+
 def p_moment(segments, image, coefs):
     result = []
     for segment in segments.items():
@@ -139,10 +150,10 @@ def p_moment(segments, image, coefs):
 def main():
     origin_image = cv2.imread('./input/image_small.png', cv2.IMREAD_GRAYSCALE)
     image = filter_threshold(origin_image)
-    segments = merge(image)
-    segmented_image = p_paint_segment(segments, image.shape)
+    segments = split(image)
+    segmented_image = paint_segment(segments, image.shape)
     segmented_image = cv2.resize(segmented_image, (800, 600), interpolation=cv2.INTER_NEAREST)
-    p_moment(segments, image, (0, 0))
+    moment(segments, image, (0, 0))
     cv2.imshow('test', segmented_image)
     cv2.waitKey()
 
