@@ -67,7 +67,7 @@ def merge(image):
     borders = {}
     for y in range(mask.shape[0]):
         for x in range(mask.shape[1]):
-            mask[y, x] = y * mask.shape[0] + x
+            mask[y, x] = y * mask.shape[1] + x
             segments[mask[y, x]] = [[y, x]]
             borders[mask[y, x]] = [[y, x]]
     while True:
@@ -104,7 +104,7 @@ def merge(image):
                 break
         if can_exit:
             break
-    return
+    return segments
 
 
 def paint_segment(segments, shape):
@@ -117,11 +117,21 @@ def paint_segment(segments, shape):
     return result_image
 
 
+def p_paint_segment(segments, shape):
+    result_image = numpy.zeros((shape[0], shape[1], 3), numpy.ubyte)
+    for segment in segments.values():
+        color = [random.randint(0, 256), random.randint(0, 256), random.randint(0, 256)]
+        for pixel in segment:
+            result_image[pixel[0], pixel[1]] = color
+    return result_image
+
+
 def main():
-    image = cv2.imread('./input/image.png', cv2.IMREAD_GRAYSCALE)
+    image = cv2.imread('./input/image_small.png', cv2.IMREAD_GRAYSCALE)
     image = filter_threshold(image)
     segments = merge(image)
-    segmented_image = paint_segment(segments, image.shape)
+    segmented_image = p_paint_segment(segments, image.shape)
+    segmented_image = cv2.resize(segmented_image, (800, 600), interpolation=cv2.INTER_NEAREST)
     cv2.imshow('test', segmented_image)
     cv2.waitKey()
 
