@@ -17,7 +17,7 @@ def filter_threshold(image):
     result_image = numpy.zeros((image.shape[0], image.shape[1]), numpy.ubyte)
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
-            if image[y, x] > 64:
+            if image[y, x] > 128:
                 result_image[y, x] = 255
     return result_image
 
@@ -37,8 +37,6 @@ def split(image):
     while True:
         can_exit = True
         for segment in stack:
-            if segment == [24, 10, 25, 11]:
-                print('Alarm!')
             if not uniform(image, segment):
                 y_b = segment[0]
                 y_m = (segment[0] + segment[2]) // 2
@@ -49,12 +47,13 @@ def split(image):
 
                 stack.remove(segment)
 
-                stack.append([y_b, x_b, y_m, x_m])
-                if y_b != y_t:
+                if y_b != y_m and x_b != x_m:
+                    stack.append([y_b, x_b, y_m, x_m])
+                if y_m != y_t and x_b != x_m:
                     stack.append([y_m, x_b, y_t, x_m])
-                if x_b != x_t:
+                if y_b != y_m and x_b != x_t:
                     stack.append([y_b, x_m, y_m, x_t])
-                if y_b != y_t and x_b != x_t:
+                if y_m != y_t and x_m != x_t:
                     stack.append([y_m, x_m, y_t, x_t])
                 can_exit = False
             else:
@@ -141,7 +140,7 @@ def merge(image, in_segments=None):
 def paint_segment(segments, shape):
     result_image = numpy.zeros((shape[0], shape[1], 3), numpy.ubyte)
     for segment in segments:
-        color = [random.randint(64, 256), random.randint(64, 256), random.randint(64, 256)]
+        color = [random.randint(64, 256), random.randint(48, 208), random.randint(64, 256)]
         for y in range(segment[0], segment[2]):
             for x in range(segment[1], segment[3]):
                 result_image[y, x] = color
@@ -151,7 +150,7 @@ def paint_segment(segments, shape):
 def p_paint_segment(segments, shape):
     result_image = numpy.zeros((shape[0], shape[1], 3), numpy.ubyte)
     for segment in segments.values():
-        color = [random.randint(0, 256), random.randint(0, 256), random.randint(0, 256)]
+        color = [random.randint(0, 256), random.randint(48, 208), random.randint(0, 256)]
         for pixel in segment:
             result_image[pixel[0], pixel[1]] = color
     return result_image
