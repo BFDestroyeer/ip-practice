@@ -1,0 +1,3 @@
+Moment of segment 0 = 180540
+Moment of segment 1 = 0
+Moment of segment 2 = 94095
